@@ -12,24 +12,5 @@ inputs:
     required: true
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Install curl and wget
-      run: apk add --no-cache curl wget
-      shell: sh
-
-    - name: Copy action files
-      shell: sh
-      run: |
-        mkdir -p /action
-        cp -r ${{ github.action_path }}/* /action/
-        cd /action
-        npm install
-        
-    - name: Run action script
-      run: node /action/src/index.js
-      shell: sh
-      env:
-        INPUT_SCAN_ID: ${{ inputs.scan_id }}
-        INPUT_DENAT_URL: ${{ inputs.denat_url }}
-        INPUT_PSE_URL: ${{ inputs.pse_url }}
+  using: 'node20'
+  main: 'src/index.js'
