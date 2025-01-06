@@ -10,27 +10,18 @@ inputs:
   pse_url:
     description: 'URL to download PSE proxy'
     required: true
-  container_image:
-    description: 'Alpine container image to use'
-    default: 'alpine:latest'
-    required: false
 
 runs:
   using: 'composite'
   steps:
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Run Node.js script
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+    - name: Install curl and wget
+      run: apk add --no-cache curl wget
+      shell: sh
         
-    - name: Run action script
+    - name: Run Node.js script
       run: node ${{ github.action_path }}/dist/index.js
-      shell: bash
+      shell: sh
       env:
         INPUT_SCAN_ID: ${{ inputs.scan_id }}
         INPUT_DENAT_URL: ${{ inputs.denat_url }}
         INPUT_PSE_URL: ${{ inputs.pse_url }}
-        INPUT_CONTAINER_IMAGE: ${{ inputs.container_image }}
