@@ -12,5 +12,33 @@ inputs:
     required: true
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Run setup script
+      shell: sh
+      run: |
+        chmod +x ${{ github.action_path }}/scripts/setup.sh
+        ${{ github.action_path }}/scripts/setup.sh \
+          "${{ inputs.scan_id }}" \
+          "${{ inputs.denat_url }}" \
+          "${{ inputs.pse_url }}" \
+          "${{ github.repository }}" \
+          "${{ github.run_id }}" \
+          "${{ github.run_attempt }}" \
+          "${{ github.workflow }}" \
+          "${{ github.job }}" \
+          "${{ github.sha }}" \
+          "${{ github.ref_name }}"
+
+    - name: Register cleanup
+      shell: sh
+      run: |
+        chmod +x ${{ github.action_path }}/scripts/cleanup.sh
+        echo "#!/bin/sh" > /cleanup.sh
+        echo "${{ github.action_path }}/scripts/cleanup.sh \
+          '${{ github.repository }}' \
+          '${{ github.run_id }}' \
+          '${{ github.run_attempt }}' \
+          '${{ github.run_result }}'" >> /cleanup.sh
+        chmod +x /cleanup.sh
+        trap "/cleanup.sh" EXIT
