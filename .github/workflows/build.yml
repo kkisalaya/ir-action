@@ -13,9 +13,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -25,39 +29,24 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Install @vercel/ncc
+      run: npm install -g @vercel/ncc
+
     - name: Build
-      run: npm run build
-
-    - name: Run tests
-      run: npm test
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dist
-        path: dist/
-
-  # Auto-commit dist folder on main branch
-  commit-dist:
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: dist
-        path: dist/
-
-    - name: Commit dist
       run: |
+        ncc build src/index.js -o dist
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add dist/
         git commit -m "chore: update dist" || echo "No changes to commit"
         git push
+
+    - name: Run tests
+      run: npm test
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v0.5.0
+        generate_release_notes: true
