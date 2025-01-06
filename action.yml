@@ -16,5 +16,21 @@ inputs:
     required: false
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run Node.js script
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Run action script
+      run: node ${{ github.action_path }}/dist/index.js
+      shell: bash
+      env:
+        INPUT_SCAN_ID: ${{ inputs.scan_id }}
+        INPUT_DENAT_URL: ${{ inputs.denat_url }}
+        INPUT_PSE_URL: ${{ inputs.pse_url }}
+        INPUT_CONTAINER_IMAGE: ${{ inputs.container_image }}
