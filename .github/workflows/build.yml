@@ -34,7 +34,10 @@ jobs:
 
     - name: Build
       run: |
-        ncc build src/index.js -o dist
+        # Bundle everything into a single file with dependencies
+        ncc build src/index.js --minify --out dist
+        
+        # Commit the dist directory
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add dist/
@@ -48,5 +51,5 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v0.5.0
+        tag_name: v0.10.0
         generate_release_notes: true
