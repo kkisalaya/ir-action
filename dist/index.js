@@ -38484,6 +38484,7 @@ const core = __nccwpck_require__(7484);
 const exec = __nccwpck_require__(5236);
 const tc = __nccwpck_require__(3472);
 const axios = __nccwpck_require__(7269);
+const os = __nccwpck_require__(857);
 
 async function run() {
   try {
@@ -38491,56 +38492,37 @@ async function run() {
     const scanId = process.env.INPUT_SCAN_ID;
     const denatUrl = process.env.INPUT_DENAT_URL;
     const pseUrl = process.env.INPUT_PSE_URL;
-    const containerImage = process.env.INPUT_CONTAINER_IMAGE || 'alpine:latest';
 
-    console.log('Starting container setup...');
+    console.log('Starting setup...');
     
-    // Download and setup container
-    await exec.exec('docker', ['pull', containerImage]);
-    console.log('Container image pulled successfully');
-    
-    const containerResult = await exec.getExecOutput('docker', ['run', '-d', containerImage]);
-    const containerId = containerResult.stdout.trim();
-    console.log(`Container started with ID: ${containerId}`);
-
     // Download tools
     console.log('Downloading denat tool...');
-    await exec.exec('docker', ['exec', containerId, 'wget', '-O', '/denat', denatUrl]);
-    await exec.exec('docker', ['exec', containerId, 'chmod', '+x', '/denat']);
+    await exec.exec('wget', ['-O', '/denat', denatUrl]);
+    await exec.exec('chmod', ['+x', '/denat']);
     
     console.log('Downloading PSE tool...');
-    await exec.exec('docker', ['exec', containerId, 'wget', '-O', '/pse', pseUrl]);
-    await exec.exec('docker', ['exec', containerId, 'chmod', '+x', '/pse']);
+    await exec.exec('wget', ['-O', '/pse', pseUrl]);
+    await exec.exec('chmod', ['+x', '/pse']);
 
     // Get container IP
-    const ipResult = await exec.getExecOutput('docker', [
-      'inspect',
-      '-f',
-      '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',
-      containerId
-    ]);
-    const containerIp = ipResult.stdout.trim();
+    const networkInterfaces = os.networkInterfaces();
+    const eth0Interface = networkInterfaces['eth0'];
+    const containerIp = eth0Interface[0].address;
     console.log(`Container IP: ${containerIp}`);
 
     // Start denat
     console.log('Starting denat...');
-    await exec.exec('docker', [
-      'exec',
-      containerId,
-      './denat',
+    const denatProcess = exec.exec('./denat', [
       `-dfproxy=${containerIp}:12345`,
       '-dfports=80,443'
-    ]);
+    ], { cwd: '/' });
 
     // Start PSE proxy
     console.log('Starting PSE proxy...');
-    await exec.exec('docker', [
-      'exec',
-      containerId,
-      './pse',
+    const pseProcess = exec.exec('./pse', [
       'serve',
       '--certsetup'
-    ]);
+    ], { cwd: '/' });
 
     // Prepare start request
     const baseUrl = 'https://github.com';
@@ -38569,8 +38551,9 @@ async function run() {
       }
     });
 
-    // Set container ID as output for cleanup
-    core.saveState('container-id', containerId);
+    // Save process IDs for cleanup
+    core.saveState('denat-pid', denatProcess.pid);
+    core.saveState('pse-pid', pseProcess.pid);
     console.log('Setup completed successfully');
 
   } catch (error) {
@@ -38581,31 +38564,35 @@ async function run() {
 
 async function cleanup() {
   try {
-    const containerId = core.getState('container-id');
-    if (containerId) {
-      console.log('Starting cleanup...');
-      // Send end request
-      const baseUrl = 'https://github.com';
-      const repo = process.env.GITHUB_REPOSITORY;
-      const buildUrl = `${baseUrl}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}/attempts/${process.env.GITHUB_RUN_ATTEMPT}`;
+    console.log('Starting cleanup...');
+    // Send end request
+    const baseUrl = 'https://github.com';
+    const repo = process.env.GITHUB_REPOSITORY;
+    const buildUrl = `${baseUrl}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}/attempts/${process.env.GITHUB_RUN_ATTEMPT}`;
 
-      const endParams = new URLSearchParams({
-        'build_url': buildUrl,
-        'status': process.env.GITHUB_RUN_RESULT
-      });
+    const endParams = new URLSearchParams({
+      'build_url': buildUrl,
+      'status': process.env.GITHUB_RUN_RESULT
+    });
 
-      await axios.post('https://pse.invisirisk.com/end', endParams.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      });
+    await axios.post('https://pse.invisirisk.com/end', endParams.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
 
-      // Stop and remove container
-      console.log('Stopping container...');
-      await exec.exec('docker', ['stop', containerId]);
-      await exec.exec('docker', ['rm', containerId]);
-      console.log('Cleanup completed successfully');
+    // Kill processes
+    const denatPid = core.getState('denat-pid');
+    const psePid = core.getState('pse-pid');
+    
+    if (denatPid) {
+      await exec.exec('kill', [denatPid]);
     }
+    if (psePid) {
+      await exec.exec('kill', [psePid]);
+    }
+    
+    console.log('Cleanup completed successfully');
   } catch (error) {
     core.setFailed(error.message);
     console.error('Cleanup error:', error);
