@@ -38487,42 +38487,56 @@ const axios = __nccwpck_require__(7269);
 
 async function run() {
   try {
-    // Get inputs
-    const scanId = core.getInput('scan_id', { required: true });
-    const denatUrl = core.getInput('denat_url', { required: true });
-    const pseUrl = core.getInput('pse_url', { required: true });
-    const containerImage = core.getInput('container_image');
+    // Get inputs from environment variables
+    const scanId = process.env.INPUT_SCAN_ID;
+    const denatUrl = process.env.INPUT_DENAT_URL;
+    const pseUrl = process.env.INPUT_PSE_URL;
+    const containerImage = process.env.INPUT_CONTAINER_IMAGE || 'alpine:latest';
 
+    console.log('Starting container setup...');
+    
     // Download and setup container
     await exec.exec('docker', ['pull', containerImage]);
-    const containerId = await getContainerIdFromOutput(
-      await exec.getExecOutput('docker', ['run', '-d', containerImage])
-    );
+    console.log('Container image pulled successfully');
+    
+    const containerResult = await exec.getExecOutput('docker', ['run', '-d', containerImage]);
+    const containerId = containerResult.stdout.trim();
+    console.log(`Container started with ID: ${containerId}`);
 
     // Download tools
+    console.log('Downloading denat tool...');
     await exec.exec('docker', ['exec', containerId, 'wget', '-O', '/denat', denatUrl]);
     await exec.exec('docker', ['exec', containerId, 'chmod', '+x', '/denat']);
+    
+    console.log('Downloading PSE tool...');
     await exec.exec('docker', ['exec', containerId, 'wget', '-O', '/pse', pseUrl]);
     await exec.exec('docker', ['exec', containerId, 'chmod', '+x', '/pse']);
 
     // Get container IP
-    const containerIp = await getContainerIp(containerId);
+    const ipResult = await exec.getExecOutput('docker', [
+      'inspect',
+      '-f',
+      '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',
+      containerId
+    ]);
+    const containerIp = ipResult.stdout.trim();
+    console.log(`Container IP: ${containerIp}`);
 
     // Start denat
+    console.log('Starting denat...');
     await exec.exec('docker', [
       'exec',
       containerId,
-      'sudo',
       './denat',
       `-dfproxy=${containerIp}:12345`,
       '-dfports=80,443'
     ]);
 
     // Start PSE proxy
+    console.log('Starting PSE proxy...');
     await exec.exec('docker', [
       'exec',
       containerId,
-      'sudo',
       './pse',
       'serve',
       '--certsetup'
@@ -38548,6 +38562,7 @@ async function run() {
     });
 
     // Send start request
+    console.log('Sending start request...');
     await axios.post('https://pse.invisirisk.com/start', startParams.toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -38556,9 +38571,11 @@ async function run() {
 
     // Set container ID as output for cleanup
     core.saveState('container-id', containerId);
+    console.log('Setup completed successfully');
 
   } catch (error) {
     core.setFailed(error.message);
+    console.error('Error:', error);
   }
 }
 
@@ -38566,6 +38583,7 @@ async function cleanup() {
   try {
     const containerId = core.getState('container-id');
     if (containerId) {
+      console.log('Starting cleanup...');
       // Send end request
       const baseUrl = 'https://github.com';
       const repo = process.env.GITHUB_REPOSITORY;
@@ -38583,26 +38601,15 @@ async function cleanup() {
       });
 
       // Stop and remove container
+      console.log('Stopping container...');
       await exec.exec('docker', ['stop', containerId]);
       await exec.exec('docker', ['rm', containerId]);
+      console.log('Cleanup completed successfully');
     }
   } catch (error) {
     core.setFailed(error.message);
+    console.error('Cleanup error:', error);
   }
-}
-
-async function getContainerIdFromOutput(result) {
-  return result.stdout.trim();
-}
-
-async function getContainerIp(containerId) {
-  const result = await exec.getExecOutput('docker', [
-    'inspect',
-    '-f',
-    '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',
-    containerId
-  ]);
-  return result.stdout.trim();
 }
 
 // Register cleanup to run on action complete
