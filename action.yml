@@ -1,0 +1,20 @@
+name: 'InvisiRisk PSE Action'
+description: 'GitHub Action for InvisiRisk PSE integration'
+inputs:
+  scan_id:
+    description: 'Scan ID for the InvisiRisk PSE'
+    required: true
+  denat_url:
+    description: 'URL to download denat tool'
+    required: true
+  pse_url:
+    description: 'URL to download PSE proxy'
+    required: true
+  container_image:
+    description: 'Alpine container image to use'
+    default: 'alpine:latest'
+    required: false
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
