@@ -14,23 +14,20 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Install dependencies
-      shell: sh
-      run: |
-        cd ${{ github.action_path }}
-        npm install
-        
     - name: Install curl and wget
       run: apk add --no-cache curl wget
       shell: sh
+
+    - name: Copy action files
+      shell: sh
+      run: |
+        mkdir -p /action
+        cp -r ${{ github.action_path }}/* /action/
+        cd /action
+        npm install
         
     - name: Run action script
-      run: node ${{ github.action_path }}/src/index.js
+      run: node /action/src/index.js
       shell: sh
       env:
         INPUT_SCAN_ID: ${{ inputs.scan_id }}
