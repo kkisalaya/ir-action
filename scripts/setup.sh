@@ -4,57 +4,45 @@ set -e
 
 # Input parameters
 SCAN_ID="$1"
-DENAT_URL="$2"
-PSE_URL="$3"
-GITHUB_REPOSITORY="$4"
-GITHUB_RUN_ID="$5"
-GITHUB_RUN_ATTEMPT="$6"
-GITHUB_WORKFLOW="$7"
-GITHUB_JOB="$8"
-GITHUB_SHA="$9"
-GITHUB_REF_NAME="${10}"
+PACKAGE_URL="$2"
+GITHUB_REPOSITORY="$3"
+GITHUB_RUN_ID="$4"
+GITHUB_RUN_ATTEMPT="$5"
+GITHUB_WORKFLOW="$6"
+GITHUB_JOB="$7"
+GITHUB_SHA="$8"
+GITHUB_REF_NAME="$9"
 
-# Install required tools
-#apk add --no-cache curl wget file iproute2
+# Get the directory where setup.sh is located
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
-# Download tools with better handling for large files
-echo "Downloading denat tool..."
-wget --verbose --timeout=60 --tries=3 --continue --progress=bar:force:noscroll \
-    --no-check-certificate --max-redirect=5 -O denat "$DENAT_URL" || {
-    echo "Failed to download denat tool"
-    exit 1
-}
-chmod +wx denat
-#file denat
-#which ip
-#ln -s /sbin/ip /usr/bin/ip
-
-echo "Download config file..."
-wget --verbose --timeout=60 --tries=3 --continue --progress=bar:force:noscroll \
-    --no-check-certificate --max-redirect=5 -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml" || {
-    echo "Failed to download config file"
+echo "Downloading package..."
+wget --verbose --timeout=60 --tries=3 --progress=bar:force:noscroll \
+    --no-check-certificate -O package.tar.gz "$PACKAGE_URL" || {
+    echo "Failed to download package"
+    rm -f package.tar.gz
     exit 1
 }
 
-echo "Downloading PSE tool..."
-# Try wget first with continue support
-for i in $(seq 1 3); do
-    echo "Attempt $i to download PSE..."
-    if wget --verbose --timeout=60 --tries=1 --continue --progress=bar:force:noscroll \
-        --no-check-certificate --max-redirect=5 -O pse "$PSE_URL"; then
-        break
+echo "Extracting package..."
+tar xzf package.tar.gz || {
+    echo "Failed to extract package"
+    rm -f package.tar.gz
+    exit 1
+}
+
+# Verify required files exist
+for file in denat pse cfg.yaml; do
+    if [ ! -f "$file" ]; then
+        echo "Required file $file not found in package"
+        rm -f package.tar.gz
+        exit 1
     fi
-    echo "Download attempt $i failed, waiting before retry..."
-    sleep 5
 done
 
-# Verify the download
-if [ ! -s pse ]; then
-    echo "PSE download failed after 3 attempts"
-    exit 1
-fi
-
-chmod +x pse
+# Make executables
+chmod +x denat pse
 
 # Add memory and system info for debugging
 echo "System Memory Status:"
@@ -82,7 +70,10 @@ echo "Starting PSE proxy..."
 sudo ./pse serve --certsetup &
 PSE_PID=$!
 
-# Store PIDs for cleanup
+# Clean up the archive
+rm -f package.tar.gz
+
+# Save PIDs for cleanup
 echo "$DENAT_PID" > /tmp/denat.pid
 echo "$PSE_PID" > /tmp/pse.pid
 

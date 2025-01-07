@@ -4,11 +4,8 @@ inputs:
   scan_id:
     description: 'Scan ID for the InvisiRisk PSE'
     required: true
-  denat_url:
-    description: 'URL to download denat tool'
-    required: true
-  pse_url:
-    description: 'URL to download PSE proxy'
+  package_url:
+    description: 'URL to download the package containing denat, PSE proxy, and config files'
     required: true
 
 runs:
@@ -31,8 +28,7 @@ runs:
         chmod +x $GITHUB_ACTION_PATH/scripts/cleanup.sh
         $GITHUB_ACTION_PATH/scripts/setup.sh \
           "${{ inputs.scan_id }}" \
-          "${{ inputs.denat_url }}" \
-          "${{ inputs.pse_url }}" \
+          "${{ inputs.package_url }}" \
           "${{ github.repository }}" \
           "${{ github.run_id }}" \
           "${{ github.run_attempt }}" \
@@ -50,7 +46,8 @@ runs:
           '${{ github.repository }}' \
           '${{ github.run_id }}' \
           '${{ github.run_attempt }}' \
-          '${{ github.run_result }}'" >> /cleanup.sh
+          '${{ github.workflow }}' \
+          '${{ github.job }}'" >> /cleanup.sh
         chmod +x /cleanup.sh
         # Register cleanup to run on exit
         trap "/cleanup.sh" EXIT
