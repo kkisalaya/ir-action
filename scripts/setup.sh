@@ -19,12 +19,12 @@ apk add --no-cache curl wget
 
 # Download tools
 echo "Downloading denat tool..."
-wget -O /denat "$DENAT_URL"
-chmod +x /denat
+wget -O denat "$DENAT_URL"
+chmod +x denat
 
 echo "Downloading PSE tool..."
-wget -O /pse "$PSE_URL"
-chmod +x /pse
+wget -O pse "$PSE_URL"
+chmod +x pse
 
 echo "Download config file..."
 wget -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml"
@@ -39,12 +39,12 @@ echo "Container IP: $CONTAINER_IP"
 
 # Start denat
 echo "Starting denat..."
-sudo /denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
+./denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
 DENAT_PID=$!
 
 # Start PSE proxy
 echo "Starting PSE proxy..."
-sudo /pse serve --certsetup &
+./pse serve --certsetup &
 PSE_PID=$!
 
 # Store PIDs for cleanup
