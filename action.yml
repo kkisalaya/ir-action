@@ -14,11 +14,30 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Debug directory structure
+      shell: sh
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Action path: ${{ github.action_path }}"
+        echo "Workspace: ${{ github.workspace }}"
+        echo "\nDirectory structure of action path:"
+        ls -la ${{ github.action_path }} || echo "Cannot access action path"
+        echo "\nDirectory structure of workspace:"
+        ls -la ${{ github.workspace }} || echo "Cannot access workspace"
+        echo "\nFull directory structure:"
+        find /home/runner/work/_actions -type f || echo "Cannot access actions directory"
+
+    - name: Copy scripts to workspace
+      shell: sh
+      run: |
+        mkdir -p ${{ github.workspace }}/scripts
+        cp ${{ github.action_path }}/scripts/* ${{ github.workspace }}/scripts/ || echo "Failed to copy scripts"
+        chmod +x ${{ github.workspace }}/scripts/*.sh || echo "Failed to make scripts executable"
+
     - name: Run setup script
       shell: sh
       run: |
-        chmod +x ${{ github.action_path }}/scripts/setup.sh
-        ${{ github.action_path }}/scripts/setup.sh \
+        ${{ github.workspace }}/scripts/setup.sh \
           "${{ inputs.scan_id }}" \
           "${{ inputs.denat_url }}" \
           "${{ inputs.pse_url }}" \
@@ -33,9 +52,8 @@ runs:
     - name: Register cleanup
       shell: sh
       run: |
-        chmod +x ${{ github.action_path }}/scripts/cleanup.sh
         echo "#!/bin/sh" > /cleanup.sh
-        echo "${{ github.action_path }}/scripts/cleanup.sh \
+        echo "${{ github.workspace }}/scripts/cleanup.sh \
           '${{ github.repository }}' \
           '${{ github.run_id }}' \
           '${{ github.run_attempt }}' \
