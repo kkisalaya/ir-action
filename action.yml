@@ -14,11 +14,22 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup scripts
+      shell: sh
+      run: |
+        # Create scripts directory
+        mkdir -p ${{ github.action_path }}/scripts
+        
+        # Move scripts to the correct location
+        mv ${{ github.action_path }}/setup.sh ${{ github.action_path }}/scripts/
+        mv ${{ github.action_path }}/cleanup.sh ${{ github.action_path }}/scripts/
+        
+        # Make scripts executable
+        chmod +x ${{ github.action_path }}/scripts/*.sh
+
     - name: Run setup script
       shell: sh
       run: |
-        chmod +x ${{ github.action_path }}/scripts/setup.sh
-        chmod +x ${{ github.action_path }}/scripts/cleanup.sh
         ${{ github.action_path }}/scripts/setup.sh \
           "${{ inputs.scan_id }}" \
           "${{ inputs.denat_url }}" \
