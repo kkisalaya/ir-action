@@ -22,6 +22,7 @@ echo "Downloading denat tool..."
 wget -O denat "$DENAT_URL"
 chmod +wx denat
 file denat
+which ip
 
 echo "Downloading PSE tool..."
 wget -O pse "$PSE_URL"
