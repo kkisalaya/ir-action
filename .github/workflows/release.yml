@@ -13,14 +13,38 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify files exist
+        run: |
+          if [ ! -f "action.yml" ]; then
+            echo "Error: action.yml not found"
+            exit 1
+          fi
+          if [ ! -d "scripts" ]; then
+            echo "Error: scripts directory not found"
+            exit 1
+          fi
+          if [ ! -f "scripts/setup.sh" ] || [ ! -f "scripts/cleanup.sh" ]; then
+            echo "Error: Required shell scripts not found"
+            exit 1
+          fi
 
       - name: Make scripts executable
-        run: chmod +x scripts/*.sh
+        run: |
+          chmod +x scripts/*.sh
+          # Basic syntax check
+          for script in scripts/*.sh; do
+            echo "Checking $script"
+            sh -n "$script"
+          done
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            scripts/*
+            scripts/setup.sh
+            scripts/cleanup.sh
             action.yml
           generate_release_notes: true
