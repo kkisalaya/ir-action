@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ github.event.release.tag_name }}
 
       - name: Verify files exist
         run: |
@@ -40,11 +40,4 @@ jobs:
             sh -n "$script"
           done
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            scripts/setup.sh
-            scripts/cleanup.sh
-            action.yml
-          generate_release_notes: true
+
