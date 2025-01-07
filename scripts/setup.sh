@@ -15,15 +15,15 @@ GITHUB_SHA="$9"
 GITHUB_REF_NAME="${10}"
 
 # Install required tools
-apk add --no-cache curl wget file iproute2
+#apk add --no-cache curl wget file iproute2
 
 # Download tools
 echo "Downloading denat tool..."
 wget -O denat "$DENAT_URL"
 chmod +wx denat
-file denat
-which ip
-ln -s /sbin/ip /usr/bin/ip
+#file denat
+#which ip
+#ln -s /sbin/ip /usr/bin/ip
 
 echo "Downloading PSE tool..."
 wget -O pse "$PSE_URL"
@@ -42,12 +42,12 @@ echo "Container IP: $CONTAINER_IP"
 
 # Start denat
 echo "Starting denat..."
-./denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
+sudo ./denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
 DENAT_PID=$!
 
 # Start PSE proxy
 echo "Starting PSE proxy..."
-./pse serve --certsetup &
+sudo ./pse serve --certsetup &
 PSE_PID=$!
 
 # Store PIDs for cleanup
