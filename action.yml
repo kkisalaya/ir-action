@@ -14,6 +14,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Check files in action directory using find command
+      run: |
+        find ${{ github.action_path }} -type f
+        
     - name: Run setup script
       shell: sh
       run: |
