@@ -15,7 +15,7 @@ GITHUB_SHA="$9"
 GITHUB_REF_NAME="${10}"
 
 # Install required tools
-apk add --no-cache curl wget libelf
+apk add --no-cache curl wget libelf libc6-compat
 
 # Download tools
 echo "Downloading denat tool..."
