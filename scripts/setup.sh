@@ -62,16 +62,22 @@ echo "Container IP: $CONTAINER_IP"
 
 # Start denat
 echo "Starting denat..."
-sudo ./denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
+sudo ./denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 > denat.log 2>&1 &
 DENAT_PID=$!
 
 # Start PSE proxy
 echo "Starting PSE proxy..."
-sudo ./pse serve --certsetup &
+sudo ./pse serve --certsetup > pse.log 2>&1 &
 PSE_PID=$!
 
 # Wait 10 seconds for denat and PSE to start
 sleep 10
+
+# Show the logs
+echo "=== Denat Output ==="
+tail -n 20 denat.log || true
+echo -e "\n=== PSE Output ==="
+tail -n 20 pse.log || true
 
 # Clean up the archive
 rm -f package.tar.gz
