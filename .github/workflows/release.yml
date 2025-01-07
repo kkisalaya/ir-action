@@ -40,16 +40,11 @@ jobs:
             sh -n "$script"
           done
 
-      - name: Copy scripts for release
-        run: |
-          cp scripts/setup.sh setup.sh
-          cp scripts/cleanup.sh cleanup.sh
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            setup.sh
-            cleanup.sh
+            scripts/setup.sh
+            scripts/cleanup.sh
             action.yml
           generate_release_notes: true
