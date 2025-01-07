@@ -15,12 +15,13 @@ GITHUB_SHA="$9"
 GITHUB_REF_NAME="${10}"
 
 # Install required tools
-apk add --no-cache curl wget libelf libc6-compat
+apk add --no-cache curl wget file
 
 # Download tools
 echo "Downloading denat tool..."
 wget -O denat "$DENAT_URL"
 chmod +wx denat
+file denat
 ldd denat
 
 echo "Downloading PSE tool..."
