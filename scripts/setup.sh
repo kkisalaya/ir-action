@@ -17,9 +17,10 @@ GITHUB_REF_NAME="${10}"
 # Install required tools
 #apk add --no-cache curl wget file iproute2
 
-# Download tools with timeout and verbose output
+# Download tools with better handling for large files
 echo "Downloading denat tool..."
-wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O denat "$DENAT_URL" || {
+wget --verbose --timeout=60 --tries=3 --continue --progress=bar:force:noscroll \
+    --no-check-certificate --max-redirect=5 -O denat "$DENAT_URL" || {
     echo "Failed to download denat tool"
     exit 1
 }
@@ -29,16 +30,30 @@ chmod +wx denat
 #ln -s /sbin/ip /usr/bin/ip
 
 echo "Download config file..."
-wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml" || {
+wget --verbose --timeout=60 --tries=3 --continue --progress=bar:force:noscroll \
+    --no-check-certificate --max-redirect=5 -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml" || {
     echo "Failed to download config file"
     exit 1
 }
 
 echo "Downloading PSE tool..."
-wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O pse "$PSE_URL" || {
-    echo "Failed to download PSE tool"
+# Try wget first with continue support
+for i in $(seq 1 3); do
+    echo "Attempt $i to download PSE..."
+    if wget --verbose --timeout=60 --tries=1 --continue --progress=bar:force:noscroll \
+        --no-check-certificate --max-redirect=5 -O pse "$PSE_URL"; then
+        break
+    fi
+    echo "Download attempt $i failed, waiting before retry..."
+    sleep 5
+done
+
+# Verify the download
+if [ ! -s pse ]; then
+    echo "PSE download failed after 3 attempts"
     exit 1
-}
+fi
+
 chmod +x pse
 
 # Add memory and system info for debugging
