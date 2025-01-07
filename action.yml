@@ -14,6 +14,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Debug Directory
+      shell: sh
+      run: |
+        echo "Resolved Action Path: ${{ github.action_path }}"
+        ls -la /home/runner/work/
+        ls -la /home/runner/work/_actions/
+        ls -la /home/runner/work/_actions/kkisalaya/
     - name: Check files in action directory using find command
       shell: sh
       run: |

@@ -42,5 +42,5 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v0.20.0
+        tag_name: v0.21.0
         generate_release_notes: true
