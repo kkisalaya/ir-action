@@ -39,12 +39,12 @@ echo "Container IP: $CONTAINER_IP"
 
 # Start denat
 echo "Starting denat..."
-/denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
+sudo /denat -dfproxy="${CONTAINER_IP}:12345" -dfports=80,443 &
 DENAT_PID=$!
 
 # Start PSE proxy
 echo "Starting PSE proxy..."
-/pse serve --certsetup &
+sudo /pse serve --certsetup &
 PSE_PID=$!
 
 # Store PIDs for cleanup
