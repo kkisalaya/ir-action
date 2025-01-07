@@ -26,6 +26,11 @@ echo "Downloading PSE tool..."
 wget -O /pse "$PSE_URL"
 chmod +x /pse
 
+echo "Download config file..."
+wget -O /cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml"
+
+ls -lrth
+
 # Get container IP
 CONTAINER_IP=$(hostname -i | awk '{print $1}')
 echo "Container IP: $CONTAINER_IP"
