@@ -21,29 +21,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Install @vercel/ncc
-      run: npm install -g @vercel/ncc
-
-    - name: Build
-      run: |
-        # Bundle everything into a single file with dependencies
-        ncc build src/index.js --minify --out dist
-        
-        # Commit the dist directory
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add dist/
-        git commit -m "chore: update dist" || echo "No changes to commit"
-        git push
-
     - name: Make scripts executable
       run: |
         chmod +x scripts/*.sh
@@ -53,8 +30,13 @@ jobs:
         git commit -m "chore: make scripts executable" || echo "No changes to commit"
         git push
 
-    - name: Run tests
-      run: npm test
+    - name: Test scripts
+      run: |
+        # Basic syntax check for shell scripts
+        for script in scripts/*.sh; do
+          echo "Checking $script"
+          sh -n "$script"
+        done
 
     - name: Create Release
       if: github.ref == 'refs/heads/main'
