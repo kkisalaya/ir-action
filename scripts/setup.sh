@@ -15,7 +15,7 @@ GITHUB_SHA="$9"
 GITHUB_REF_NAME="${10}"
 
 # Install required tools
-apk add --no-cache curl wget file
+apk add --no-cache curl wget file iproute2
 
 # Download tools
 echo "Downloading denat tool..."
