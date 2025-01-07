@@ -17,21 +17,37 @@ GITHUB_REF_NAME="${10}"
 # Install required tools
 #apk add --no-cache curl wget file iproute2
 
-# Download tools
+# Download tools with timeout and verbose output
 echo "Downloading denat tool..."
-wget -O denat "$DENAT_URL"
+wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O denat "$DENAT_URL" || {
+    echo "Failed to download denat tool"
+    exit 1
+}
 chmod +wx denat
 #file denat
 #which ip
 #ln -s /sbin/ip /usr/bin/ip
 
 echo "Download config file..."
-wget -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml"
+wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml" || {
+    echo "Failed to download config file"
+    exit 1
+}
 
 echo "Downloading PSE tool..."
-wget -O pse "$PSE_URL"
+wget --verbose --timeout=30 --tries=3 --progress=bar:force:noscroll -O pse "$PSE_URL" || {
+    echo "Failed to download PSE tool"
+    exit 1
+}
 chmod +x pse
 
+# Add memory and system info for debugging
+echo "System Memory Status:"
+free -h
+echo "System Load:"
+uptime
+echo "Network Status:"
+netstat -tuln
 
 ls -lrth
 
