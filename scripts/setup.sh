@@ -15,7 +15,7 @@ GITHUB_SHA="$9"
 GITHUB_REF_NAME="${10}"
 
 # Install required tools
-apk add --no-cache curl wget
+apk add --no-cache curl wget libelf
 
 # Download tools
 echo "Downloading denat tool..."
