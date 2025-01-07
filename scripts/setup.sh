@@ -70,6 +70,9 @@ echo "Starting PSE proxy..."
 sudo ./pse serve --certsetup &
 PSE_PID=$!
 
+# Wait 10 seconds for denat and PSE to start
+sleep 10
+
 # Clean up the archive
 rm -f package.tar.gz
 
