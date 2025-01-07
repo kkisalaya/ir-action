@@ -19,20 +19,17 @@ runs:
       run: |
         echo "Resolved Action Path: ${{ github.action_path }}"
         echo "$GITHUB_ACTION_PATH"
-        ls -la /home/runner/work/
-        ls -la /home/runner/work/_actions/
-        ls -la /home/runner/work/_actions/kkisalaya/
     - name: Check files in action directory using find command
       shell: sh
       run: |
-        find ${{ github.action_path }} -type f
+        find $GITHUB_ACTION_PATH -type f
 
     - name: Run setup script
       shell: sh
       run: |
-        chmod +x ${{ github.action_path }}/scripts/setup.sh
-        chmod +x ${{ github.action_path }}/scripts/cleanup.sh
-        ${{ github.action_path }}/scripts/setup.sh \
+        chmod +x $GITHUB_ACTION_PATH/scripts/setup.sh
+        chmod +x $GITHUB_ACTION_PATH/scripts/cleanup.sh
+        $GITHUB_ACTION_PATH/scripts/setup.sh \
           "${{ inputs.scan_id }}" \
           "${{ inputs.denat_url }}" \
           "${{ inputs.pse_url }}" \
@@ -49,7 +46,7 @@ runs:
       run: |
         # Create cleanup script
         echo "#!/bin/sh" > /cleanup.sh
-        echo "${{ github.action_path }}/scripts/cleanup.sh \
+        echo "$GITHUB_ACTION_PATH/scripts/cleanup.sh \
           '${{ github.repository }}' \
           '${{ github.run_id }}' \
           '${{ github.run_attempt }}' \
