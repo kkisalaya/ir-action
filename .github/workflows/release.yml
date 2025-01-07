@@ -14,7 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          files: |
+            scripts/*
+            action.yml
           generate_release_notes: true
