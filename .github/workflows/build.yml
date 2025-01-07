@@ -42,7 +42,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v0.18.0
+        tag_name: v0.19.0
         files: |
           scripts/*
           action.yml
