@@ -20,7 +20,8 @@ apk add --no-cache curl wget
 # Download tools
 echo "Downloading denat tool..."
 wget -O denat "$DENAT_URL"
-chmod +x denat
+chmod +wx denat
+file denat
 
 echo "Downloading PSE tool..."
 wget -O pse "$PSE_URL"
