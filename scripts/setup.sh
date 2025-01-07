@@ -25,12 +25,13 @@ chmod +wx denat
 #which ip
 #ln -s /sbin/ip /usr/bin/ip
 
+echo "Download config file..."
+wget -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml"
+
 echo "Downloading PSE tool..."
 wget -O pse "$PSE_URL"
 chmod +x pse
 
-echo "Download config file..."
-wget -O cfg.yaml "https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml"
 
 ls -lrth
 
