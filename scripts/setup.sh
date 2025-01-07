@@ -23,6 +23,7 @@ wget -O denat "$DENAT_URL"
 chmod +wx denat
 file denat
 which ip
+ln -s /sbin/ip /usr/bin/ip
 
 echo "Downloading PSE tool..."
 wget -O pse "$PSE_URL"
