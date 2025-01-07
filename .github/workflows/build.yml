@@ -40,9 +40,11 @@ jobs:
 
     - name: Create Release
       if: github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v1
+      uses: aboutte/build-and-tag-action@v2
+      env:
+          GITHUB_TOKEN: ${{ github.token }}
       with:
-        tag_name: v0.19.0
+        tag_name: v0.20.0
         files: |
           scripts/*
           action.yml
