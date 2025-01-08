@@ -6,31 +6,29 @@ set -e
 GITHUB_REPOSITORY="$1"
 GITHUB_RUN_ID="$2"
 GITHUB_RUN_ATTEMPT="$3"
-GITHUB_RUN_RESULT="$4"
+GITHUB_WORKFLOW="$4"
+GITHUB_JOB="$5"
 
-# Read PIDs
-DENAT_PID=$(cat /tmp/denat.pid)
-PSE_PID=$(cat /tmp/pse.pid)
-
-# Prepare and send end request
+# Base URLs
 BASE_URL="https://github.com"
 BUILD_URL="${BASE_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
 
 echo "Sending end request..."
 curl -X POST "https://pse.invisirisk.com/end" \
   -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "builder=github" \
+  -d "build_id=${GITHUB_RUN_ID}" \
   -d "build_url=${BUILD_URL}" \
-  -d "status=${GITHUB_RUN_RESULT}"
+  -d "project=${GITHUB_REPOSITORY}" \
+  -d "workflow=${GITHUB_WORKFLOW} - ${GITHUB_JOB}"
 
-# Kill processes
-if [ -n "$DENAT_PID" ]; then
-  echo "Stopping denat process..."
-  kill "$DENAT_PID" || true
-fi
-
-if [ -n "$PSE_PID" ]; then
-  echo "Stopping PSE process..."
-  kill "$PSE_PID" || true
+# Get container ID
+if [ -f /tmp/ir-container.id ]; then
+    CONTAINER_ID=$(cat /tmp/ir-container.id)
+    echo "Stopping container: $CONTAINER_ID"
+    docker stop "$CONTAINER_ID" || true
+    docker rm "$CONTAINER_ID" || true
+    rm -f /tmp/ir-container.id
 fi
 
 echo "Cleanup completed successfully"
