@@ -12,6 +12,9 @@ GITHUB_JOB="$6"
 GITHUB_SHA="$7"
 GITHUB_REF_NAME="$8"
 
+# Clean up any existing container
+docker rm -f ir-proxy 2>/dev/null || true
+
 echo "Starting InvisiRisk container..."
 CONTAINER_ID=$(docker run -d \
   --name ir-proxy \
@@ -33,41 +36,47 @@ CONTAINER_ID=$(docker run -d \
 
 echo "Container ID: $CONTAINER_ID"
 
+# Save container ID for cleanup immediately
+echo "$CONTAINER_ID" > /tmp/ir-container.id
+
 # Function to check container status
 check_container() {
     echo "Checking container status..."
     docker ps -a --filter "id=$CONTAINER_ID" --format "{{.Status}}"
     echo "Container logs:"
-    docker logs "$CONTAINER_ID"
-    echo "Container processes:"
-    docker top "$CONTAINER_ID" || true
+    docker logs "$CONTAINER_ID" 2>&1 || true
 }
 
-# Initial container status
+# Initial check
 check_container
 
-# Wait and check status every second for 30 seconds
-for i in $(seq 1 30); do
-    echo "Wait iteration $i/30..."
-    sleep 1
-    
-    # Check if container is still running
-    if ! docker ps -q -f "id=$CONTAINER_ID" > /dev/null; then
-        echo "Container stopped unexpectedly!"
-        echo "Final container status:"
-        check_container
-        exit 1
-    fi
+# Give the container a moment to start
+sleep 5
 
-    # Show current status every 5 seconds
-    if [ $((i % 5)) -eq 0 ]; then
-        check_container
-    fi
-done
+# Check if container is still running
+if ! docker ps -q -f "id=$CONTAINER_ID" > /dev/null; then
+    echo "Container failed to start or stopped unexpectedly!"
+    check_container
+    exit 1
+fi
 
-# Final status check
-echo "Final container status:"
-check_container
+# Base URLs for start request
+BASE_URL="https://github.com"
+BUILD_URL="${BASE_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
 
-# Save container ID for cleanup
-echo "$CONTAINER_ID" > /tmp/ir-container.id
+echo "Sending start request..."
+curl -X POST "https://pse.invisirisk.com/start" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "builder=github" \
+  -d "id=${SCAN_ID}" \
+  -d "build_id=${GITHUB_RUN_ID}" \
+  -d "build_url=${BUILD_URL}" \
+  -d "project=${GITHUB_REPOSITORY}" \
+  -d "workflow=${GITHUB_WORKFLOW} - ${GITHUB_JOB}" \
+  -d "builder_url=${BASE_URL}" \
+  -d "scm=git" \
+  -d "scm_commit=${GITHUB_SHA}" \
+  -d "scm_branch=${GITHUB_REF_NAME}" \
+  -d "scm_origin=${BASE_URL}/${GITHUB_REPOSITORY}"
+
+echo "Setup completed successfully"
