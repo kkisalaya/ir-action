@@ -14,7 +14,7 @@ GITHUB_REF_NAME="$8"
 
 echo "Starting InvisiRisk container..."
 docker run -d \
-  --name ir-action \
+  --name ir-proxy \
   --privileged \
   --net=host \
   -v /sys/fs/bpf:/sys/fs/bpf \
@@ -29,7 +29,7 @@ docker run -d \
   -e GITHUB_JOB="$GITHUB_JOB" \
   -e GITHUB_SHA="$GITHUB_SHA" \
   -e GITHUB_REF_NAME="$GITHUB_REF_NAME" \
-  kkisalaya/ir-action:latest
+  kkisalaya/ir-proxy:latest
 
 # Wait for container to start and initialize
 echo "Waiting for services to initialize..."
