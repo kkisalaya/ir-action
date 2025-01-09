@@ -22,8 +22,6 @@ CONTAINER_ID=$(docker run -d \
   --net=host \
   -v /sys/fs/bpf:/sys/fs/bpf \
   -v /sys/kernel/debug:/sys/kernel/debug \
-  -v /lib/modules:/lib/modules:ro \
-  -v /usr/src:/usr/src:ro \
   -e SCAN_ID="$SCAN_ID" \
   -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
   -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
