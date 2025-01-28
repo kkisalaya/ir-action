@@ -12,69 +12,123 @@ GITHUB_JOB="$6"
 GITHUB_SHA="$7"
 GITHUB_REF_NAME="$8"
 
-# Clean up any existing container
-docker rm -f ir-proxy 2>/dev/null || true
+# Array of packages to install
+packages="iptables curl wget nano"  # Add or remove packages as needed
 
-echo "Starting InvisiRisk container..."
-CONTAINER_ID=$(docker run -d \
-  --name ir-proxy \
-  --privileged \
-  --net=host \
-  -v /sys/fs/bpf:/sys/fs/bpf \
-  -v /sys/kernel/debug:/sys/kernel/debug \
-  -e SCAN_ID="$SCAN_ID" \
-  -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
-  -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
-  -e GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
-  -e GITHUB_WORKFLOW="$GITHUB_WORKFLOW" \
-  -e GITHUB_JOB="$GITHUB_JOB" \
-  -e GITHUB_SHA="$GITHUB_SHA" \
-  -e GITHUB_REF_NAME="$GITHUB_REF_NAME" \
-  kkisalaya/ir-proxy:latest)
 
-echo "Container ID: $CONTAINER_ID"
-
-# Save container ID for cleanup immediately
-echo "$CONTAINER_ID" > /tmp/ir-container.id
-
-# Function to check container status
-check_container() {
-    echo "Checking container status..."
-    docker ps -a --filter "id=$CONTAINER_ID" --format "{{.Status}}"
-    echo "Container logs:"
-    docker logs "$CONTAINER_ID" 2>&1 || true
+# Function to install packages using apk
+install_with_apk() {
+    echo "Installing packages using apk..."
+    apk update
+    for package in $packages; do
+        echo "Installing $package..."
+        apk add "$package"
+    done
 }
 
-# Initial check
-check_container
 
-# Give the container a moment to start
-sleep 5
+# Function to install packages using apt-get
+install_with_apt() {
+    echo "Installing packages using apt-get..."
+    apt-get update
+    for package in $packages; do
+        echo "Installing $package..."
+        apt-get install -y "$package"
+    done
+}
 
-# Check if container is still running
-if ! docker ps -q -f "id=$CONTAINER_ID" > /dev/null; then
-    echo "Container failed to start or stopped unexpectedly!"
-    check_container
+
+# Check if apk is available
+if command -v apk >/dev/null 2>&1; then
+    install_with_apk
+# If apk is not available, check if apt-get is available
+elif command -v apt-get >/dev/null 2>&1; then
+    install_with_apt
+else
+    echo "Error: Neither apk nor apt-get package manager found."
     exit 1
 fi
 
-# Base URLs for start request
-BASE_URL="https://github.com"
-BUILD_URL="${BASE_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
 
-echo "Sending start request..."
-curl -X POST "https://pse.invisirisk.com/start" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "builder=github" \
-  -d "id=${SCAN_ID}" \
-  -d "build_id=${GITHUB_RUN_ID}" \
-  -d "build_url=${BUILD_URL}" \
-  -d "project=${GITHUB_REPOSITORY}" \
-  -d "workflow=${GITHUB_WORKFLOW} - ${GITHUB_JOB}" \
-  -d "builder_url=${BASE_URL}" \
-  -d "scm=git" \
-  -d "scm_commit=${GITHUB_SHA}" \
-  -d "scm_branch=${GITHUB_REF_NAME}" \
-  -d "scm_origin=${BASE_URL}/${GITHUB_REPOSITORY}"
+echo "All packages installation completed."
 
-echo "Setup completed successfully"
+echo "Setting up iptables..."
+iptables -t nat -N pse
+iptables -t nat -A OUTPUT -j pse
+
+
+# Get the IP address of pse-proxy
+PSE_IP=$(getent hosts pse-proxy | awk '{ print $1 }')
+
+iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
+echo "Iptables setup completed."
+
+
+echo "Setting up custom certificate..."
+# Download the certificate
+curl -k https://pse.invisirisk.com/ca > /etc/ssl/certs/pse.pem
+
+# Update the CA certificates
+update-ca-certificates
+
+
+# Configure Git
+if command -v git >/dev/null 2>&1; then
+    git config --system http.sslCAInfo /etc/ssl/certs/pse.pem
+    echo "Git configured to use custom certificate."
+fi
+
+
+# Configure npm
+if command -v npm >/dev/null 2>&1; then
+    npm config set cafile /etc/ssl/certs/pse.pem
+    echo "npm configured to use custom certificate."
+fi
+
+# Configure yarn
+if command -v yarn >/dev/null 2>&1; then
+    yarn config set cafile /etc/ssl/certs/pse.pem
+    echo "yarn configured to use custom certificate."
+fi
+
+# Configure Python pip
+if command -v pip >/dev/null 2>&1; then
+    pip config --global set global.cert /etc/ssl/certs/pse.pem
+    echo "pip configured to use custom certificate."
+fi
+
+
+# Set environment variables
+echo "export SSL_CERT_FILE=/etc/ssl/certs/pse.pem" >> /etc/environment
+echo "export REQUESTS_CA_BUNDLE=/etc/ssl/certs/pse.pem" >> /etc/environment
+echo "Environment variables set for custom certificate."
+
+echo "Custom certificate setup in Docker container completed."
+
+echo "TODO: Download and RUN PSE"
+
+# Main function
+main() {
+    # Environment variables
+    base="https://base-url/"
+    repo="https://github-repo"
+    build_id=`hostname`
+    build_url=https://build.com/`hostname`
+    project=$SERVICE_NAME
+    workflow="docker-compose"
+    builder_url="https://builder-url"
+    scm="git"
+    scm_commit="commit"
+    scm_branch="branch"
+    scm_origin="origin"
+
+    # Construct query parameters
+    query="builder=github&build_id=$build_id&build_url=$build_url&project=$project&workflow=$workflow&builder_url=$builder_url&scm=$scm&scm_commit=$scm_commit&scm_branch=$scm_branch&scm_origin=$scm_origin"
+
+    # Perform HTTP POST request using curl
+    echo "Sending POST request..."
+    curl -X POST -d "$query" -H "Content-Type: application/x-www-form-urlencoded" https://pse.invisirisk.com/start
+}
+
+# Execute main function
+main
