@@ -63,8 +63,8 @@ echo "IP Address: $PSE_IP"
 sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
 echo "Iptables setup completed."
 
-echo "Download and RUN PSE"
-curl -o ~/pse https://ir-dev-public.s3.us-west-2.amazonaws.com/pse
+echo "Download PSE"
+curl -v -o ~/pse https://ir-dev-public.s3.us-west-2.amazonaws.com/pse
 echo "Download cfg"
 curl -o ~/cfg.yaml https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml
 curl -o ~/production/leaks.toml https://ir-dev-public.s3.us-west-2.amazonaws.com/leaks.toml
