@@ -66,7 +66,7 @@ echo "Iptables setup completed."
 
 echo "Setting up custom certificate..."
 # Download the certificate
-sudo curl -k https://pse.invisirisk.com/ca > /etc/ssl/certs/pse.pem
+sudo curl -k https://pse.invisirisk.com/ca | sudo tee /etc/ssl/certs/pse.pem > /dev/null
 
 # Update the CA certificates
 sudo update-ca-certificates
