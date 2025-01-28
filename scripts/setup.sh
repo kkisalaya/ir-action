@@ -69,6 +69,8 @@ PSE_PID=$!
 
 echo "Sleeping.."
 sleep 5
+echo "Running netstat"
+sudo netstat -natup | grep 12345
 
 echo "Setting up iptables..."
 sudo iptables -t nat -N pse
@@ -80,6 +82,9 @@ PSE_IP=$(curl -s ifconfig.me)
 echo "IP Address: $PSE_IP"
 sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
 echo "Iptables setup completed."
+
+echo "Verifying nat rules"
+sudo iptables -t nat -L pse -v -n
 
 
 echo "Setting up custom certificate..."
