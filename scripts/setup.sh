@@ -72,6 +72,7 @@ sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $
 echo "Iptables setup completed."
 
 echo "Starting proxy"
+sudo chmod +x ~/pse
 sudo ~/pse serve &
 PSE_PID=$!
 
