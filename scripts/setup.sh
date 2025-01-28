@@ -73,7 +73,7 @@ echo "Iptables setup completed."
 
 echo "Starting proxy"
 sudo chmod +x ~/pse
-sudo ~/pse serve --policy policy.json --config cfg.yaml&
+sudo ~/pse serve --policy ~/policy.json --config ~/cfg.yaml &
 PSE_PID=$!
 
 echo "Sleeping.."
