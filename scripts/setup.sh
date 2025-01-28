@@ -53,14 +53,14 @@ fi
 echo "All packages installation completed."
 
 echo "Setting up iptables..."
-iptables -t nat -N pse
-iptables -t nat -A OUTPUT -j pse
+sudo iptables -t nat -N pse
+sudo iptables -t nat -A OUTPUT -j pse
 
 
 # Get the IP address of pse-proxy
-PSE_IP=$(getent hosts pse-proxy | awk '{ print $1 }')
+PSE_IP=$(curl -s ifconfig.me)
 
-iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
+sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
 echo "Iptables setup completed."
 
 
