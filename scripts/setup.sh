@@ -72,6 +72,8 @@ sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $
 echo "Iptables setup completed."
 
 echo "Starting proxy"
+export INVISIRISK_PORTAL=https://app.dev.invisirisk.com
+export INVISIRISK_JWT_TOKEN=1FL0OVuoSgeqy-y3T5cGGDjLGS4gaTRKtuTw4Jo9kwl8460Vz6lnnVvhrgh_FSTRmjYCsRgYEaxwBcuPP7Noyg
 sudo chmod +x ~/pse
 sudo ~/pse serve --policy ~/policy.json --config ~/cfg.yaml &
 PSE_PID=$!
