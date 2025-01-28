@@ -57,7 +57,7 @@ curl -o ~/pse https://ir-dev-public.s3.us-west-2.amazonaws.com/pse
 echo "Download cfg"
 curl -o ~/cfg.yaml https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml
 curl -o ~/production/leaks.toml https://ir-dev-public.s3.us-west-2.amazonaws.com/leaks.toml
-curl -o ~/production/policy.json https://ir-dev-public.s3.us-west-2.amazonaws.com/policy.json
+curl -o ~/policy.json https://ir-dev-public.s3.us-west-2.amazonaws.com/policy.json
 
 
 echo "Setting up iptables..."
@@ -73,7 +73,7 @@ echo "Iptables setup completed."
 
 echo "Starting proxy"
 sudo chmod +x ~/pse
-sudo ~/pse serve &
+sudo ~/pse serve --policy policy.json --config cfg.yaml&
 PSE_PID=$!
 
 echo "Sleeping.."
