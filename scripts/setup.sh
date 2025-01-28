@@ -51,9 +51,9 @@ fi
 
 
 echo "All packages installation completed."
-
+mkdir ~/production
 echo "Download PSE"
-curl -v -o ~/pse https://ir-dev-public.s3.us-west-2.amazonaws.com/pse
+curl -o ~/pse https://ir-dev-public.s3.us-west-2.amazonaws.com/pse
 echo "Download cfg"
 curl -o ~/cfg.yaml https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml
 curl -o ~/production/leaks.toml https://ir-dev-public.s3.us-west-2.amazonaws.com/leaks.toml
