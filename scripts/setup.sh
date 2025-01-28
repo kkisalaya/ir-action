@@ -30,10 +30,10 @@ install_with_apk() {
 # Function to install packages using apt-get
 install_with_apt() {
     echo "Installing packages using apt-get..."
-    apt-get update
+    sudo apt-get update
     for package in $packages; do
         echo "Installing $package..."
-        apt-get install -y "$package"
+        sudo apt-get install -y "$package"
     done
 }
 
