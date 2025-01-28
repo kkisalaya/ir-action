@@ -59,17 +59,17 @@ sudo iptables -t nat -A OUTPUT -j pse
 
 # Get the IP address of pse-proxy
 PSE_IP=$(curl -s ifconfig.me)
-
+echo "IP Address: $PSE_IP"
 sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
 echo "Iptables setup completed."
 
 
 echo "Setting up custom certificate..."
 # Download the certificate
-curl -k https://pse.invisirisk.com/ca > /etc/ssl/certs/pse.pem
+sudo curl -k https://pse.invisirisk.com/ca > /etc/ssl/certs/pse.pem
 
 # Update the CA certificates
-update-ca-certificates
+sudo update-ca-certificates
 
 
 # Configure Git
