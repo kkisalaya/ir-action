@@ -174,3 +174,7 @@ main() {
 
 # Execute main function
 main
+
+echo "Running sample array"
+curl -v https://www.example.com
+
