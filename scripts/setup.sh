@@ -94,7 +94,8 @@ sudo iptables -t nat -L pse -v -n
 echo "Setting up custom certificate..."
 # Download the certificate
 sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /etc/ssl/certs/pse.pem > /dev/null
-
+echo "Listing files in /etc/ssl/certs"
+sudo ls -lrth /etc/ssl/certs/
 # Update the CA certificates
 sudo update-ca-certificates
 
