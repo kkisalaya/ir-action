@@ -33,7 +33,6 @@ runs:
           "${{ github.sha }}" \
           "${{ github.ref_name }}"
 
-  post:
     - name: Cleanup
       shell: sh
       if: always()
