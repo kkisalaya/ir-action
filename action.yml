@@ -4,6 +4,10 @@ inputs:
   scan_id:
     description: 'Scan ID for the InvisiRisk PSE'
     required: true
+  command:
+    description: 'Command to execute (setup/cleanup)'
+    required: false
+    default: 'setup'
 
 runs:
   using: 'composite'
@@ -19,6 +23,7 @@ runs:
         find $GITHUB_ACTION_PATH -type f
 
     - name: Run setup script
+      if: inputs.command == 'setup'
       shell: sh
       run: |
         chmod +x $GITHUB_ACTION_PATH/scripts/setup.sh
@@ -33,9 +38,9 @@ runs:
           "${{ github.sha }}" \
           "${{ github.ref_name }}"
 
-    - name: Cleanup
+    - name: Run Cleanup
+      if: inputs.command == 'cleanup'
       shell: sh
-      if: always()
       run: |
         $GITHUB_ACTION_PATH/scripts/cleanup.sh \
           "${{ github.repository }}" \
