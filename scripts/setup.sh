@@ -94,6 +94,7 @@ sudo iptables -t nat -L pse -v -n
 echo "Setting up custom certificate..."
 # Download the certificate
 sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /etc/ssl/certs/pse.pem > /dev/null
+sudo ln -sf /etc/ssl/certs/pse.pem /usr/local/share/ca-certificates/pse.crt
 echo "Listing files in /etc/ssl/certs"
 sudo ls -lrth /etc/ssl/certs/
 # Update the CA certificates
@@ -138,9 +139,9 @@ echo "Doing ls"
 ls -l /etc/ssl/certs/pse.pem
 ls -l /etc/ssl/certs | grep pse.pem
 echo "Running openssl verify"
-openssl verify -CAfile /etc/ssl/certs/pse.pem https://example.com
+openssl s_client -connect example.com:443 -servername example.com -showcerts </dev/null 2>/dev/null | openssl x509 -out /tmp/example.crt
 echo "Running openssl x509"
-openssl x509 -in /etc/ssl/certs/pse.pem -text -noout
+openssl verify -CAfile /etc/ssl/certs/pse.pem /tmp/example.crt
 echo "Check environment variables for certs"
 echo $SSL_CERT_FILE        # Should point to /etc/ssl/certs/pse.pem
 echo $REQUESTS_CA_BUNDLE  # Should point to /etc/ssl/certs/pse.pem
