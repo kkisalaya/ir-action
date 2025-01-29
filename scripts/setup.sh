@@ -154,7 +154,7 @@ main() {
 
     # Perform HTTP POST request using curl
     echo "Sending POST request..."
-    curl -X POST -d "$query" -H "Content-Type: application/x-www-form-urlencoded" https://pse.invisirisk.com/start
+    curl -v -X POST -d "$query" -H "Content-Type: application/x-www-form-urlencoded" https://pse.invisirisk.com/start
 }
 
 # Execute main function
