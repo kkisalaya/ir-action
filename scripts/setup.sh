@@ -59,6 +59,9 @@ curl -o ~/cfg.yaml https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml
 curl -o ~/production/leaks.toml https://ir-dev-public.s3.us-west-2.amazonaws.com/leaks.toml
 curl -o ~/policy.json https://ir-dev-public.s3.us-west-2.amazonaws.com/policy.json
 
+echo "Disable ipv6"
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+cat /proc/sys/net/ipv6/conf/all/disable_ipv6
 
 echo "Starting proxy"
 export INVISIRISK_PORTAL=https://app.dev.invisirisk.com
