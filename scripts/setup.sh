@@ -59,6 +59,8 @@ curl -o ~/cfg.yaml https://ir-dev-public.s3.us-west-2.amazonaws.com/cfg.yaml
 curl -o ~/leaks.toml https://ir-dev-public.s3.us-west-2.amazonaws.com/leaks.toml
 curl -o ~/policy.json https://ir-dev-public.s3.us-west-2.amazonaws.com/policy.json
 
+ls -lrth ~/
+
 echo "Disable ipv6"
 sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
 cat /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -97,8 +99,8 @@ echo "Setting up custom certificate..."
 sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /usr/local/share/ca-certificates/pse.crt > /dev/null
 #sudo ln -sf /etc/ssl/certs/pse.pem /usr/local/share/ca-certificates/pse.crt
 sudo update-ca-certificates
-echo "Listing files in /etc/ssl/certs"
-sudo ls -lrth /etc/ssl/certs/
+#echo "Listing files in /etc/ssl/certs"
+#sudo ls -lrth /etc/ssl/certs/
 # Update the CA certificates
 #sudo update-ca-certificates
 
@@ -134,16 +136,7 @@ sudo sh -c 'echo "export SSL_CERT_FILE=/etc/ssl/certs/pse.pem" >> /etc/environme
 sudo sh -c 'echo "export REQUESTS_CA_BUNDLE=/etc/ssl/certs/pse.pem" >> /etc/environment'
 echo "Environment variables set for custom certificate."
 
-echo "Custom certificate setup in Docker container completed."
 
-echo "checking if custom certificate have been set correctly"
-echo "Doing ls"
-ls -l /etc/ssl/certs/
-#ls -l /etc/ssl/certs | grep pse.pem
-echo "Running openssl verify"
-#openssl s_client -connect example.com:443 -servername example.com -showcerts </dev/null 2>/dev/null | openssl x509 -out /tmp/example.crt
-echo "Running openssl x509"
-#openssl verify -CAfile /etc/ssl/certs/pse.pem /tmp/example.crt
 echo "Check environment variables for certs"
 echo $SSL_CERT_FILE        # Should point to /etc/ssl/certs/pse.pem
 echo $REQUESTS_CA_BUNDLE  # Should point to /etc/ssl/certs/pse.pem
@@ -175,6 +168,6 @@ main() {
 # Execute main function
 main
 
-echo "Running sample array"
+echo "Running sample curl"
 curl -v https://www.example.com
 
