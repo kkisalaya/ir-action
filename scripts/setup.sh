@@ -81,7 +81,8 @@ sudo iptables -t nat -A OUTPUT -j pse
 
 
 # Get the IP address of pse-proxy
-PSE_IP=$(curl -s ifconfig.me)
+#PSE_IP=$(curl -s ifconfig.me)
+PSE_IP=127.0.0.1
 echo "IP Address: $PSE_IP"
 sudo iptables -t nat -A pse -p tcp -m tcp --dport 443 -j DNAT --to-destination $PSE_IP:12345
 echo "Iptables setup completed."
