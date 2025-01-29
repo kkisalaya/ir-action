@@ -36,14 +36,10 @@ runs:
     - name: Register cleanup
       shell: sh
       run: |
-        # Create cleanup script
-        echo "#!/bin/sh" > /cleanup.sh
-        echo "$GITHUB_ACTION_PATH/scripts/cleanup.sh \
+        # Register cleanup to run on exit using the existing cleanup script
+        trap "$GITHUB_ACTION_PATH/scripts/cleanup.sh \
           '${{ github.repository }}' \
           '${{ github.run_id }}' \
           '${{ github.run_attempt }}' \
           '${{ github.workflow }}' \
-          '${{ github.job }}'" >> /cleanup.sh
-        chmod +x /cleanup.sh
-        # Register cleanup to run on exit
-        trap "/cleanup.sh" EXIT
+          '${{ github.job }}'" EXIT
