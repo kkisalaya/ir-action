@@ -69,7 +69,7 @@ echo "Starting proxy"
 export INVISIRISK_PORTAL=https://app.dev.invisirisk.com
 export INVISIRISK_JWT_TOKEN=1FL0OVuoSgeqy-y3T5cGGDjLGS4gaTRKtuTw4Jo9kwl8460Vz6lnnVvhrgh_FSTRmjYCsRgYEaxwBcuPP7Noyg
 sudo chmod +x ~/pse
-sudo -E ~/pse serve --policy ~/policy.json --config ~/cfg.yaml &
+sudo -E ~/pse serve --policy ~/policy.json --config ~/cfg.yaml >> ~/pse.log 1>&1 &
 PSE_PID=$!
 
 echo "Sleeping.."
@@ -92,25 +92,16 @@ echo "Iptables setup completed."
 echo "Verifying nat rules"
 sudo iptables -t nat -L pse -v -n
 
-
 echo "Setting up custom certificate..."
 # Download the certificate
-#sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /etc/ssl/certs/pse.pem > /dev/null
 sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /usr/local/share/ca-certificates/pse.crt > /dev/null
-#sudo ln -sf /etc/ssl/certs/pse.pem /usr/local/share/ca-certificates/pse.crt
 sudo update-ca-certificates
-#echo "Listing files in /etc/ssl/certs"
-#sudo ls -lrth /etc/ssl/certs/
-# Update the CA certificates
-#sudo update-ca-certificates
-
 
 # Configure Git
 if command -v git >/dev/null 2>&1; then
     sudo git config --system http.sslCAInfo /etc/ssl/certs/pse.pem
     echo "Git configured to use custom certificate."
 fi
-
 
 # Configure npm
 if command -v npm >/dev/null 2>&1; then
