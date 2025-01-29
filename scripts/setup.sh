@@ -101,26 +101,26 @@ sudo update-ca-certificates
 
 # Configure Git
 if command -v git >/dev/null 2>&1; then
-    git config --system http.sslCAInfo /etc/ssl/certs/pse.pem
+    sudo git config --system http.sslCAInfo /etc/ssl/certs/pse.pem
     echo "Git configured to use custom certificate."
 fi
 
 
 # Configure npm
 if command -v npm >/dev/null 2>&1; then
-    npm config set cafile /etc/ssl/certs/pse.pem
+    sudo npm config set cafile /etc/ssl/certs/pse.pem
     echo "npm configured to use custom certificate."
 fi
 
 # Configure yarn
 if command -v yarn >/dev/null 2>&1; then
-    yarn config set cafile /etc/ssl/certs/pse.pem
+    sudo yarn config set cafile /etc/ssl/certs/pse.pem
     echo "yarn configured to use custom certificate."
 fi
 
 # Configure Python pip
 if command -v pip >/dev/null 2>&1; then
-    pip config --global set global.cert /etc/ssl/certs/pse.pem
+    sudo pip config --global set global.cert /etc/ssl/certs/pse.pem
     echo "pip configured to use custom certificate."
 fi
 
