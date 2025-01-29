@@ -33,13 +33,13 @@ runs:
           "${{ github.sha }}" \
           "${{ github.ref_name }}"
 
-    - name: Register cleanup
+  post:
+    - name: Cleanup
       shell: sh
       run: |
-        # Register cleanup to run on exit using the existing cleanup script
-        trap "$GITHUB_ACTION_PATH/scripts/cleanup.sh \
-          '${{ github.repository }}' \
-          '${{ github.run_id }}' \
-          '${{ github.run_attempt }}' \
-          '${{ github.workflow }}' \
-          '${{ github.job }}'" EXIT
+        $GITHUB_ACTION_PATH/scripts/cleanup.sh \
+          "${{ github.repository }}" \
+          "${{ github.run_id }}" \
+          "${{ github.run_attempt }}" \
+          "${{ github.workflow }}" \
+          "${{ github.job }}"
