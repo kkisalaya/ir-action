@@ -36,6 +36,7 @@ runs:
   post:
     - name: Cleanup
       shell: sh
+      if: always()
       run: |
         $GITHUB_ACTION_PATH/scripts/cleanup.sh \
           "${{ github.repository }}" \
