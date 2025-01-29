@@ -126,8 +126,8 @@ fi
 
 
 # Set environment variables
-echo "export SSL_CERT_FILE=/etc/ssl/certs/pse.pem" >> /etc/environment
-echo "export REQUESTS_CA_BUNDLE=/etc/ssl/certs/pse.pem" >> /etc/environment
+sudo sh -c 'echo "export SSL_CERT_FILE=/etc/ssl/certs/pse.pem" >> /etc/environment'
+sudo sh -c 'echo "export REQUESTS_CA_BUNDLE=/etc/ssl/certs/pse.pem" >> /etc/environment'
 echo "Environment variables set for custom certificate."
 
 echo "Custom certificate setup in Docker container completed."
