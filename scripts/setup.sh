@@ -133,6 +133,18 @@ echo "Environment variables set for custom certificate."
 
 echo "Custom certificate setup in Docker container completed."
 
+echo "checking if custom certificate have been set correctly"
+echo "Doing ls"
+ls -l /etc/ssl/certs/pse.pem
+ls -l /etc/ssl/certs | grep pse.pem
+echo "Running openssl verify"
+openssl verify -CAfile /etc/ssl/certs/pse.pem https://example.com
+echo "Running openssl x509"
+openssl x509 -in /etc/ssl/certs/pse.pem -text -noout
+echo "Check environment variables for certs"
+echo $SSL_CERT_FILE        # Should point to /etc/ssl/certs/pse.pem
+echo $REQUESTS_CA_BUNDLE  # Should point to /etc/ssl/certs/pse.pem
+
 
 # Main function
 main() {
