@@ -172,7 +172,7 @@ main() {
 main
 
 echo "Running sample curl"
-curl -vvv --trace-ascii https://www.example.com
+curl -vvv https://www.example.com
 
 echo "Check certificate chain using openssl"
 openssl s_client -connect www.example.com:443 -showcerts
