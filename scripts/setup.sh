@@ -96,6 +96,15 @@ sudo iptables -t nat -L pse -v -n
 echo "Setting up custom certificate..."
 # Download the certificate
 sudo curl -v -k https://pse.invisirisk.com/ca | sudo tee /usr/local/share/ca-certificates/pse.crt > /dev/null
+
+# Let's check the format of the certificate file
+echo "Running ls"
+ls -lrth /usr/local/share/ca-certificates/pse.crt
+echo "Running openssl"
+openssl x509 -in /usr/local/share/ca-certificates/pse.crt -text -noout
+echo "Running grep"
+grep -c "BEGIN CERTIFICATE" /usr/local/share/ca-certificates/pse.crt
+
 sudo update-ca-certificates
 
 # Configure Git
