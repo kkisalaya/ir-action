@@ -106,6 +106,8 @@ echo "Running grep"
 grep -c "BEGIN CERTIFICATE" /usr/local/share/ca-certificates/pse.crt
 
 sudo update-ca-certificates
+echo "Checking ssl cert directory for symlink"
+ls -l /etc/ssl/certs | grep pse
 
 # Configure Git
 if command -v git >/dev/null 2>&1; then
