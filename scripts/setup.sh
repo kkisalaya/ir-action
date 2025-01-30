@@ -69,7 +69,7 @@ echo "Starting proxy"
 export INVISIRISK_PORTAL=https://app.dev.invisirisk.com
 export INVISIRISK_JWT_TOKEN=1FL0OVuoSgeqy-y3T5cGGDjLGS4gaTRKtuTw4Jo9kwl8460Vz6lnnVvhrgh_FSTRmjYCsRgYEaxwBcuPP7Noyg
 sudo chmod +x ~/pse
-sudo -E ~/pse serve --policy ~/policy.json --config ~/cfg.yaml >> ~/pse.log 1>&1 &
+sudo -E ~/pse serve --policy ~/policy.json --config ~/cfg.yaml --config ~/leaks.toml >> ~/pse.log 1>&1 &
 PSE_PID=$!
 
 echo "Sleeping.."
